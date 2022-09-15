@@ -8,3 +8,8 @@ It's a static HTML, CSS, Javascript site (really, just 1 CSS class, no that not 
 handful of passwords using a simple memorable passphrase and not much else.
 
 Maybe I'll say more later...
+
+
+### use this...
+
+identicons
