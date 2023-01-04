@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      #output {
+        font-family: monospace, monospace;
+      }
+    </style>
+    <script type="text/javascript">
+
+////////////////////////////////////////////////////////////////////////////////
+// "Libraries" used...
+
+// from:
+// https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+const cyrb53 = function(str, seed = 0) {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1>>>0);
+};
+
+function cyrb_dual32 (str, seed = 0) {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
+    return [h1, h2];
+};
+
+function reduce(x, N) {
+  // this:
+  // https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+  // doesn't seem to work in javascript -_-
+  // going to use modulo until I find something better...
+
+  return x % N;
+}
+
+// https://github.com/bryc/code/blob/master/jshash/PRNGs.md#xoroshiro
+function xoroshiro64ss(a, b) {
+  return function() {
+    var r = Math.imul(a, 0x9E3779BB); r = (r << 5 | r >>> 27) * 5;
+    b = b ^ a; a = b ^ (a << 26 | a >>> 6) ^ b << 9;
+    b = b << 13 | b >>> 19;
+    return (r >>> 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Misc...
+
+// https://en.wikipedia.org/wiki/Password_strength
+
+////////////////////////////////////////////////////////////////////////////////
+// This is where I get to work!
+
+const alpha = "abcdefghijklmnopqrstuvwxyz";
+const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const numbr = "0123456789";
+const punct = "!#$%&'*+,-./:;=?@^_`|~";
+
+function rand_in_range(rand, min, max) {
+  return reduce(rand, max - min + 1) + min;
+}
+
+function doit() {
+  let val = document.getElementById("basephrase").value;
+
+  // set up the generator
+  let seeds = cyrb_dual32(val);
+  let rng = xoroshiro64ss(seeds[0], seeds[1]);
+
+  // build the charset
+  let charset = "";
+  // Do NOT change the order of these... or bad things happen!
+  if (document.getElementById("low_alpha").checked) {
+    charset += alpha;
+  }
+  if (document.getElementById("up_alpha").checked) {
+    charset += ALPHA;
+  }
+  if (document.getElementById("numbr").checked) {
+    charset += numbr;
+  }
+  if (document.getElementById("punct").checked) {
+    charset += punct;
+  }
+
+  if (charset.length == 0) {
+    alert("You need to select at least *one* item for the set of characters to be used!");
+    return;
+  }
+
+  document.getElementById("char_set").innerHTML = charset;
+
+  let min_chars = Math.round(document.getElementById("min_chars").value);
+  let max_chars = Math.round(document.getElementById("max_chars").value);
+  console.log(min_chars);
+  console.log(max_chars);
+
+
+  // Probably the only error thingy in the whole thing...
+  if (min_chars > max_chars) {
+    alert("Minimum number of characters is greater than the maximum number of characters!");
+    return;
+  }
+
+  // generate passwords!
+  let pass = "<ol>";
+
+  for (let n = 0; n < 10; n++) {
+    let n_chars = rand_in_range(rng(), min_chars, max_chars);
+
+    pass += "<li>"
+    for (let i = 0; i < n_chars; i++) {
+      const r = rng();
+      pass += charset[reduce(r, charset.length)];
+    }
+    pass += "</li>"
+  }
+
+  pass += "</ol>";
+
+
+  document.getElementById("output").innerHTML = pass;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// some funky visualizations
+
+function max_val(arr) {
+  var val = arr[0];
+  for (var i = 1; i < arr.length; i++) {
+    if (val < arr[i]) {
+      val = arr[i];
+    }
+  }
+  return val;
+}
+
+function min_val(arr) {
+  var val = arr[0];
+  for (var i = 1; i < arr.length; i++) {
+    if (val > arr[i]) {
+      val = arr[i];
+    }
+  }
+  return val;
+}
+
+function str_int_arr(str) {
+  var arr = new Array(str.length);
+  for (var i = 0; i < str.length; i++) {
+    arr[i] = str[i].charCodeAt(0);
+  }
+  return arr;
+}
+
+function gcd(a, b) {
+  while (b != 0) {
+    var t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}
+
+function make_rgba(r, g, b, min, max) {
+  function m(v) { return Math.floor(((v - min) / (max - min)) * 255); }
+  return "rgba(" + m(r) + ", " + m(g) + ", " + m(b) + ", 1.0)";
+}
+
+function draw(str) {
+  const canvas = document.getElementById("tutorial");
+
+  if (canvas.getContext) {
+    const ctx = canvas.getContext("2d");
+
+    let len = str.length;
+    let arr = str_int_arr(str)
+    let max = max_val(arr);
+    let min = min_val(arr);
+    console.log(min);
+    console.log(max);
+
+    for (var y = 0; y < canvas.height; y += 2) {
+      for (var x = 0; x < canvas.width; x += 2) {
+        var i = x+y;
+        ctx.fillStyle = make_rgba(arr[i % len], arr[(i+1)%len], arr[(i+2)%len], min, max);
+        console.log(arr[i % len]);
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+
+  } else {
+    // canvas-unsupported code here
+  }
+}
+
+    </script>
+  </head>
+  <body onload="draw('flippity flopity floo! 12345');">
+    <h1>Leeloo Dallas Multipass!</h1>
+
+    <canvas id="tutorial" width="32" height="32">(no HTML canvas support)</canvas>
+
+    <p>tl;dr This is a simple password "manager" that is: 1. free 2. private 3. fast 4. safe 5. secure 6. portable (supports all platforms that have a web browser with javascript)</p>
+
+    <p>More information below, here's the Multipass:</p>
+
+    <img src="leeloo.jpg"/><br>
+
+    <label for="basephrase">Base Input:</label> <input id="basephrase" type="text"><br>
+
+    <input id="low_alpha" type="checkbox" checked="true"> <label for="low_alpha">Lowercase Alphabet</label> <br>
+    <input id="up_alpha" type="checkbox"checked="true"> <label for="up_alpha">Upper Alphabet</label> <br>
+    <input id="numbr" type="checkbox" checked="true"> <label for="numbr">Numbers</label> <br>
+    <input id="punct" type="checkbox" value="0"> <label for="punct">Punctuation</label> <br>
+
+    <label for="min_chars">Minimum number of characters:</label> <input type="number" id="min_chars" min="1" max="100" step="1" value="8"><br>
+    <label for="max_chars">Maximum number of characters:</label> <input type="number" id="max_chars" min="1" max="100" step="1" value="20"><br>
+
+    <input onclick="doit()" type="button" value="Runnit!"><br>
+    <p>Character Set: <div id="char_set"></div></p>
+
+    <p>Output: <div id="output"></div></p>
+
+    <img src="multipass.jpg"/><br>
+
+    <!-- Description down here -->
+
+    <h2>The Second Header!</h2>
+
+    <p>First of all, I'm not a fancy web designer.  I can do the CSS & HTML & JavaScript thing, but I can't design shit, so this looks ugly, deal!</p>
+
+    <p>Second, Leeloo & her images are copyright Fox media or something, along with "The Fifth Element" yada yada don't sue me.  Also this is not sponsored by them in any way, just fyi.</p>
+
+    <p>Okay, onto the fun stuff!  You're probably reading this because you're wondering how this magic works, if you can trust it, and stuff like that.</p>
+
+    <h3>Trust</h3>
+
+    <p>Honestly you can trust this as much as you can trust the likes of 1Password, LastPass, Apple's Keychain, Gnome Keyring, or anything else you find on this site: <a href="https://en.wikipedia.org/wiki/List_of_password_managers">https://en.wikipedia.org/wiki/List_of_password_managers</a>, or anywhere else.  That is, not much.  The problem with most of these is that they store your information somewhere (like your hard drive, or their hard drives).  This means that if someone breaks into $PASSWORD_MANAGER's servers, your passwords are stolen.  If you stop paying for the service, your passwords are gone.  If your hard drive explodes, all of your passwords are gone, etc...</p>
+
+    <p>The benefit of using this is that it is offline-able, we don't store anything, and everything is generated new each time!</p>
+
+    <p>the down side is I don't have a team of security professionals to make sure this is a robust & secure tool.  Nor do I have a set of web designer people to make this looks good. (The upside though is that this page loads insanely fast!  It's self-contained, which is another upside, no external JS to ship your data anywhere!!!)</p>
+
+    <h3>How to use</h3>
+
+    <p>This is a fairly simple tool, with a number of options.  Here are the steps:</p>
+
+    <ol>
+      <li>Make a passphrase</li>
+      <li>Choose generation options</li>
+      <li>Run it</li>
+    </ol>
+
+    <p>The first thing you <b>*need*</b> to do is think of a simple, memorable passphrase.  This is <b>*not*</b> to be something super complicated.  "Password1" will do as a passphrase.  Though don't use that, as other people might use it, then you get into problems of multiple people using the same password, etc. Choose something memorable, like "My favorite ice cream is bananna", whatever.  Doesn't matter.</p>
+
+    <p>Next, select your parameters!  These are usually specified by the website you are using.  A good default is to have all but punctuation enabled, as some places don't accept that.  The default of 8-20 characters is fine also.  Some want more, so give them more.</p>
+
+    <p>Last, run the thing!  This will generare 10 passwords you can copy/paste somewhere else.  These passwords are deterministic!  So you only need to remember your passphrase, the options you chose, and which password you selected.</p>
+
+    <p>You can also use the <b>*same*</b> passphrase with <b>*different*</b> options to get different passwords.  Maybe one day I'll update it so that it refreshes when you change values so you can see...</p>
+
+    <h2>But wait, there's more!</h2>
+
+    <p>Kinda, not really.  I could write more but I don't feel like it.  Have fun & stay safe!</p>
+
+  </body>
+</html>
