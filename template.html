@@ -5,6 +5,8 @@
     <style>
 #w3css#
 
+#theme#
+
 #basic#
     </style>
     <script type="text/javascript">
@@ -24,7 +26,7 @@
 
     </script>
   </head>
-  <body onload="draw('flippity flopity floo! 12345');">
+  <body onload="draw('flippity flopity floo! 12345');" class="w3-theme-d5">
     <h1>Leeloo Dallas Multipass!</h1>
 
     <canvas id="tutorial" width="32" height="32">(no HTML canvas support)</canvas>
@@ -33,30 +35,45 @@
 
     <p>More information below, here's the Multipass:</p>
 
-    <img src='data:image/jpeg;base64, #leeloo#'/><br>
+    <img class="w3-round" src="data:image/jpeg;base64, #leeloo#"/><br>
 
-    <label for="basephrase">Base Input:</label> <input id="basephrase" type="text"><br>
+    <div class="w3-container w3-theme-l3">
+      <label for="basephrase">Base Input:</label>
+        <input id="basephrase" class="w3-input w3-border" type="text"><br>
 
-    <input id="low_alpha" type="checkbox" checked="true"> <label for="low_alpha">Lowercase Alphabet</label> <br>
-    <input id="up_alpha" type="checkbox"checked="true"> <label for="up_alpha">Upper Alphabet</label> <br>
-    <input id="numbr" type="checkbox" checked="true"> <label for="numbr">Numbers</label> <br>
-    <input id="punct" type="checkbox" value="0"> <label for="punct">Punctuation</label> <br>
+      <input id="low_alpha" type="checkbox" class="w3-input" checked="true">
+        <label for="low_alpha">Lowercase Alphabet</label> <br>
 
-    <label for="min_chars">Minimum number of characters:</label> <input type="number" id="min_chars" min="1" max="100" step="1" value="8"><br>
-    <label for="max_chars">Maximum number of characters:</label> <input type="number" id="max_chars" min="1" max="100" step="1" value="20"><br>
+      <input id="up_alpha" type="checkbox" class="w3-input" checked="true">
+        <label for="up_alpha">Upper Alphabet</label> <br>
 
-    <input onclick="doit()" type="button" value="Runnit!"><br>
-    <p>Character Set: <div id="char_set"></div></p>
+      <input id="numbr" type="checkbox" class="w3-input" checked="true">
+        <label for="numbr">Numbers</label> <br>
 
-    <p>Output: <div id="output"></div></p>
+      <input id="punct" type="checkbox" class="w3-input" value="0">
+        <label for="punct">Punctuation</label> <br>
 
-    <img src="multipass.jpg"/><br>
+      <label for="min_chars">Minimum number of characters:</label> <input type="number" id="min_chars" min="1" max="100" step="1" value="8"><br>
+      <label for="max_chars">Maximum number of characters:</label> <input type="number" id="max_chars" min="1" max="100" step="1" value="20"><br>
+
+      <input onclick="doit()" type="button" value="Runnit!"><br>
+      <p>Character Set: <div id="char_set"></div></p>
+
+      <p>Output: <div id="output" class="grid-container"></div></p>
+    </div>
+
+    <img src="data:image/jpeg;base64, #multipass#"/><br>
 
     <!-- Description down here -->
 
-    <h2>The Second Header!</h2>
+<h2>
+The Second Header!
+</h2>
 
-    <p>First of all, I'm not a fancy web designer.  I can do the CSS & HTML & JavaScript thing, but I can't design shit, so this looks ugly, deal!</p>
+<p>
+First of all, I'm not a fancy web designer.
+I can do the CSS & HTML & JavaScript thing, but I can't design shit, so this looks ugly, deal!
+</p>
 
     <p>Second, Leeloo & her images are copyright Fox media or something, along with "The Fifth Element" yada yada don't sue me.  Also this is not sponsored by them in any way, just fyi.</p>
 

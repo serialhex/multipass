@@ -6,16 +6,12 @@ const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const numbr = "0123456789";
 const punct = "!#$%&'*+,-./:;=?@^_`|~";
 
-function doit() {
-  let val = document.getElementById("basephrase").value;
-
-  // set up the generator
-  let seeds = cyrb_dual32(val);
-  let rng = xoroshiro64ss(seeds[0], seeds[1]);
-
+function gen_charset(extra_chars) {
   // build the charset
   let charset = "";
-  // Do NOT change the order of these... or bad things happen!
+
+  charset += extra_chars;
+
   if (document.getElementById("low_alpha").checked) {
     charset += alpha;
   }
@@ -28,6 +24,22 @@ function doit() {
   if (document.getElementById("punct").checked) {
     charset += punct;
   }
+
+  charset = charset.split('');
+  charset = [...new Set(charset)];
+  charset.sort();
+  charset = charset.join('');
+  return charset;
+}
+
+function doit() {
+  let val = document.getElementById("basephrase").value;
+
+  // set up the generator
+  let seeds = cyrb_dual32(val);
+  let rng = xoroshiro64ss(seeds[0], seeds[1]);
+
+  let charset = gen_charset("");
 
   if (charset.length == 0) {
     alert("You need to select at least *one* item for the set of characters to be used!");
@@ -49,20 +61,20 @@ function doit() {
   }
 
   // generate passwords!
-  let pass = "<ol>";
+  let pass = "";
 
   for (let n = 0; n < 10; n++) {
     let n_chars = rand_in_range(rng(), min_chars, max_chars);
 
-    pass += "<li>"
+    pass += "<div class=\"grid-item\">"
     for (let i = 0; i < n_chars; i++) {
       const r = rng();
       pass += charset[reduce(r, charset.length)];
     }
-    pass += "</li>"
+    pass += "</div>"
   }
 
-  pass += "</ol>";
+  // pass += "</ol>";
 
 
   document.getElementById("output").innerHTML = pass;

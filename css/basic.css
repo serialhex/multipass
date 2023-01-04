@@ -1,4 +1,18 @@
+/*
 #output {
   font-family: monospace, monospace;
+}
+*/
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  padding: 10px;
+}
+
+.grid-item {
+  padding: 20px;
+  font-size: 15px;
+  text-align: center;
 }
 

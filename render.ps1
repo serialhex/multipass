@@ -4,12 +4,14 @@
 $token_list = @{
   w3css = Get-Content -Path css\w3.css -RAW
   basic = Get-Content -Path css\basic.css -RAW
+  theme = Get-Content -Path css\theme.css -RAW
   hash  = Get-Content -Path js\hash.js -RAW
   rng   = Get-Content -Path js\rng.js -RAW
   main  = Get-Content -Path js\main.js -RAW
   vis   = Get-Content -Path js\vis.js -RAW
 
   leeloo = [convert]::ToBase64String((Get-Content -path leeloo.jpg -Encoding byte))
+  multipass = [convert]::ToBase64String((Get-Content -path multipass.jpg -Encoding byte))
 }
 
 $html = Get-Content -Path template.html -RAW
