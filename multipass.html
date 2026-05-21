@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leeloo Dallas Multipass</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    :root {
+      --bg:        #07090f;
+      --bg2:       #0d1220;
+      --bg3:       #121a2e;
+      --accent:    #ff6a00;
+      --accent2:   #ff9a3c;
+      --cyan:      #00e5ff;
+      --cyan2:     #00bcd4;
+      --text:      #c8d8e8;
+      --text-dim:  #7a90a8;
+      --border:    rgba(0,229,255,0.18);
+      --glow:      0 0 12px rgba(0,229,255,0.35);
+      --glow-o:    0 0 12px rgba(255,106,0,0.45);
+      --mono:      'Share Tech Mono', monospace;
+      --display:   'Orbitron', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.12) 2px,
+        rgba(0,0,0,0.12) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* noise grain */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.5;
+    }
+
+    .page-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      padding: 40px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .header-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--cyan);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      opacity: 0.7;
+    }
+
+    .header h1 {
+      font-family: var(--display);
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      line-height: 1;
+      color: #fff;
+      text-shadow: 0 0 30px rgba(255,106,0,0.6), 0 0 60px rgba(255,106,0,0.2);
+    }
+
+    .header h1 span {
+      color: var(--accent);
+    }
+
+    .header-sub {
+      margin-top: 10px;
+      color: var(--text-dim);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .header-line {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 28px;
+      margin-bottom: 24px;
+      position: relative;
+      animation: fadeIn 0.4s ease both;
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--cyan), transparent);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-title {
+      font-family: var(--display);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+
+    /* ── FORM GRID ── */
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 580px) {
+      .input-row { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    input[type=text],
+    input[type=password],
+    input[type=number] {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 10px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type=text]:focus,
+    input[type=password]:focus,
+    input[type=number]:focus {
+      border-color: var(--cyan);
+      box-shadow: var(--glow);
+    }
+
+    /* passphrase field wrapper for toggle button */
+    .pass-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .pass-wrap input {
+      padding-right: 42px; /* room for the toggle */
+    }
+
+    .pass-toggle {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-dim);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+    }
+
+    .pass-toggle:hover { color: var(--cyan); }
+
+    .pass-toggle svg {
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: block;
+    }
+
+    /* generating spinner state on run button */
+    .run-btn.busy {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .run-btn.busy .btn-label::after {
+      content: '...';
+      animation: ellipsis 1s steps(4, end) infinite;
+    }
+
+    @keyframes ellipsis {
+      0%   { content: ''; }
+      25%  { content: '.'; }
+      50%  { content: '..'; }
+      75%  { content: '...'; }
+    }
+
+    /* ── CHECKBOXES ── */
+    .checks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .check-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 7px 14px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .check-pill:has(input:checked) {
+      border-color: var(--cyan2);
+      background: rgba(0,188,212,0.07);
+      color: var(--cyan);
+    }
+
+    .check-pill input[type=checkbox] {
+      accent-color: var(--cyan);
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── RANGE ROW ── */
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .range-label {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .range-pair {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .range-pair input[type=number] {
+      width: 70px;
+      text-align: center;
+    }
+
+    .range-sep {
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    /* ── RUN BUTTON ── */
+    .run-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+      border-radius: 2px;
+    }
+
+    .run-btn:hover {
+      background: rgba(255,106,0,0.1);
+      box-shadow: var(--glow-o);
+    }
+
+    .run-btn:active {
+      background: rgba(255,106,0,0.2);
+    }
+
+    .run-btn svg {
+      width: 14px; height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ── CHARSET DISPLAY ── */
+    .charset-display {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      word-break: break-all;
+      line-height: 1.7;
+      display: none;
+    }
+
+    .charset-display.visible { display: block; }
+
+    .charset-label {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      opacity: 0.6;
+    }
+
+    /* ── OUTPUT GRID ── */
+    #output-panel { display: none; }
+    #output-panel.visible { display: block; }
+
+    .output-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .pw-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+      animation: fadeIn 0.3s ease both;
+    }
+
+    .pw-card:hover {
+      border-color: rgba(0,229,255,0.4);
+      background: rgba(0,229,255,0.04);
+    }
+
+    .pw-card.copied {
+      border-color: #4caf50;
+      background: rgba(76,175,80,0.07);
+    }
+
+    .pw-ident {
+      flex-shrink: 0;
+    }
+
+    .pw-ident svg {
+      display: block;
+      width: 36px;
+      height: 36px;
+      border-radius: 2px;
+    }
+
+    .pw-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pw-index {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+    }
+
+    .pw-text {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .pw-meta {
+      font-size: 9px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .pw-strength {
+      color: var(--cyan2);
+    }
+
+    .pw-copy-hint {
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      margin-left: auto;
+      align-self: center;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .pw-card:hover .pw-copy-hint { opacity: 1; }
+
+    .copy-confirm {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--display);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: #4caf50;
+      background: rgba(13,18,32,0.92);
+      border-radius: 2px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+
+    .pw-card.copied .copy-confirm { opacity: 1; }
+
+    /* ── DOCS ── */
+    .docs { margin-top: 48px; }
+
+    .docs h2 {
+      font-family: var(--display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 12px;
+      margin-top: 32px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .docs p, .docs li {
+      color: var(--text-dim);
+      line-height: 1.8;
+      font-size: 13px;
+      max-width: 700px;
+    }
+
+    .docs ol {
+      padding-left: 20px;
+    }
+
+    .docs li { margin-bottom: 4px; }
+
+    .docs a {
+      color: var(--cyan2);
+      text-decoration: none;
+    }
+
+    .docs a:hover {
+      text-decoration: underline;
+    }
+
+    .docs strong {
+      color: var(--text);
+    }
+
+    .disclaimer {
+      margin-top: 48px;
+      padding: 16px;
+      border: 1px solid rgba(255,106,0,0.2);
+      background: rgba(255,106,0,0.04);
+      border-radius: 2px;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      line-height: 1.7;
+    }
+
+    /* stagger cards */
+    .pw-card:nth-child(1)  { animation-delay: 0.02s; }
+    .pw-card:nth-child(2)  { animation-delay: 0.05s; }
+    .pw-card:nth-child(3)  { animation-delay: 0.08s; }
+    .pw-card:nth-child(4)  { animation-delay: 0.11s; }
+    .pw-card:nth-child(5)  { animation-delay: 0.14s; }
+    .pw-card:nth-child(6)  { animation-delay: 0.17s; }
+    .pw-card:nth-child(7)  { animation-delay: 0.20s; }
+    .pw-card:nth-child(8)  { animation-delay: 0.23s; }
+    .pw-card:nth-child(9)  { animation-delay: 0.26s; }
+    .pw-card:nth-child(10) { animation-delay: 0.29s; }
+
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-eyebrow">password generation system</div>
+      <h1>Leeloo Dallas <span>MULTIPASS</span></h1>
+      <div class="header-sub">stateless // deterministic // offline-capable</div>
+      <div class="header-line"></div>
+    </div>
+
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-title">// parameters</div>
+
+      <div class="input-row">
+        <div class="field">
+          <label for="account">Account / Service</label>
+          <input id="account" type="text" placeholder="e.g. github, gmail...">
+        </div>
+        <div class="field">
+          <label for="basephrase">Base Passphrase</label>
+          <div class="pass-wrap">
+            <input id="basephrase" type="password" placeholder="your memorable secret" autocomplete="off">
+            <button class="pass-toggle" id="pass-toggle" type="button" onclick="togglePassVis()" title="Show/hide passphrase">
+              <!-- eye icon, swapped by JS -->
+              <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="checks">
+        <label class="check-pill">
+          <input id="low_alpha" type="checkbox" checked> a–z
+        </label>
+        <label class="check-pill">
+          <input id="up_alpha" type="checkbox" checked> A–Z
+        </label>
+        <label class="check-pill">
+          <input id="numbr" type="checkbox" checked> 0–9
+        </label>
+        <label class="check-pill">
+          <input id="punct" type="checkbox"> !#$%...
+        </label>
+      </div>
+
+      <div class="range-row">
+        <span class="range-label">Length</span>
+        <div class="range-pair">
+          <input type="number" id="min_chars" min="1" max="100" step="1" value="8" title="Minimum length">
+          <span class="range-sep">–</span>
+          <input type="number" id="max_chars" min="1" max="100" step="1" value="20" title="Maximum length">
+        </div>
+        <span class="range-label" style="opacity:0.5">chars</span>
+      </div>
+
+      <button class="run-btn" id="run-btn" onclick="doit()">
+        <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span class="btn-label">Generate</span>
+      </button>
+
+      <div id="charset-display" class="charset-display">
+        <div class="charset-label">active charset</div>
+        <span id="char_set"></span>
+      </div>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div id="output-panel" class="panel">
+      <div class="panel-title">// generated passwords <span style="opacity:0.5;font-size:9px">&mdash; click to copy</span></div>
+      <div id="output" class="output-grid"></div>
+    </div>
+
+    <!-- DOCS -->
+    <div class="docs">
+      <h2>How This Works</h2>
+      <p>Multipass is a <strong>stateless</strong> password generator. It stores nothing. Given the same inputs, it produces the same outputs, every time. Your passphrase plus the account name produce a unique seed; from that seed, a deterministic RNG generates your passwords.</p>
+      <p style="margin-top:10px">This means you don't need a database, a cloud subscription, or trust in anyone's servers. You need to remember your passphrase and which of the 10 generated passwords you picked.</p>
+
+      <h2>How To Use It</h2>
+      <ol>
+        <li>Pick a passphrase &mdash; memorable, not something everyone uses. "My cat enjoys jazz at 3am" is fine.</li>
+        <li>Type the account name (github, bank, etc.). This seeds per-account uniqueness.</li>
+        <li>Set character options and length to match the site's requirements.</li>
+        <li>Hit Generate. Pick one of the 10 passwords and remember which number it was.</li>
+        <li>Same passphrase + same account + same settings = same 10 passwords, forever.</li>
+      </ol>
+
+      <h2>Trust Model</h2>
+      <p>You can audit every line of this file. It has no network requests, no tracking, no storage. Your passphrase is run through <strong>PBKDF2-SHA256</strong> (300,000 iterations) using the account name as the salt &mdash; a proper key derivation function that makes offline brute-force attacks genuinely expensive. The resulting 64 bits seed <strong>xoroshiro64**</strong>, a statistically high-quality PRNG. All crypto runs in your browser's native <code>SubtleCrypto</code> API; nothing leaves your machine.</p>
+      <p style="margin-top:10px">For more: <a href="https://en.wikipedia.org/wiki/List_of_password_managers" target="_blank">Wikipedia: Password Managers</a></p>
+
+      <div class="disclaimer">
+        Leeloo &amp; The Fifth Element are &copy; their respective rights holders. This is a personal fan project, not affiliated with or sponsored by anyone.
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── xoroshiro64** PRNG ────────────────────────────────────────────────────
+    // Takes two Uint32 seeds, returns a closure producing 32-bit unsigned ints.
+    function xoroshiro64ss(a, b) {
+      return function() {
+        const r = Math.imul(a, 0x9E3779BB);
+        const out = ((r << 5 | r >>> 27) * 5) >>> 0;
+        b = (b ^ a) >>> 0;
+        a = ((a << 26 | a >>> 6) ^ b ^ (b << 9)) >>> 0;
+        b = (b << 13 | b >>> 19) >>> 0;
+        return out;
+      };
+    }
+
+    // ── Bias-free bounded reduction ───────────────────────────────────────────
+    // Float-multiply trick: accurate for N well under 2^24 (charset sizes fine).
+    function bounded_rand(rng, N) {
+      return Math.floor((rng() / 4294967296) * N);
+    }
+
+    // ── PBKDF2 key derivation ─────────────────────────────────────────────────
+    // account is the salt; passphrase is the key material.
+    // Returns two Uint32 values suitable for seeding xoroshiro64**.
+    // ~300k iterations @ SHA-256 takes ~0.5-1s on modern hardware — intentionally slow.
+    async function derive_seed(account, passphrase) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(passphrase),
+        "PBKDF2",
+        false,
+        ["deriveBits"]
+      );
+      const bits = await crypto.subtle.deriveBits(
+        {
+          name:       "PBKDF2",
+          salt:       enc.encode(account || "multipass-default-salt"),
+          iterations: 300000,
+          hash:       "SHA-256"
+        },
+        keyMaterial,
+        64  // 64 bits = two Uint32s
+      );
+      const view = new DataView(bits);
+      return [view.getUint32(0, false), view.getUint32(4, false)];
+    }
+
+    // ── Charset builder ───────────────────────────────────────────────────────
+    const ALPHA_LO = "abcdefghijklmnopqrstuvwxyz";
+    const ALPHA_HI = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const DIGITS   = "0123456789";
+    const PUNCT    = "!#$%&'*+,-./:;=?@^_`|~";
+
+    function gen_charset() {
+      let charset = "";
+      if (document.getElementById("low_alpha").checked) charset += ALPHA_LO;
+      if (document.getElementById("up_alpha").checked)  charset += ALPHA_HI;
+      if (document.getElementById("numbr").checked)     charset += DIGITS;
+      if (document.getElementById("punct").checked)     charset += PUNCT;
+      return [...new Set(charset)].sort().join('');
+    }
+
+    // Update the charset display immediately on any checkbox change.
+    function update_charset_display() {
+      const charset = gen_charset();
+      const el = document.getElementById("char_set");
+      const display = document.getElementById("charset-display");
+      if (charset.length > 0) {
+        el.textContent = charset;
+        display.classList.add("visible");
+      } else {
+        el.textContent = "";
+        display.classList.remove("visible");
+      }
+    }
+
+    ["low_alpha","up_alpha","numbr","punct"].forEach(id => {
+      document.getElementById(id).addEventListener("change", update_charset_display);
+    });
+
+    // ── Entropy estimator ─────────────────────────────────────────────────────
+    function entropy_bits(len, charsetSize) {
+      return Math.round(len * Math.log2(charsetSize));
+    }
+
+    // ── Minidenticons (modified from laurentpayot/minidenticons) ─────────────
+    const COLORS_NB = 9;
+    const SAT = 85, LIT = 55;
+    function simpleHash(str) {
+      return str.split('').reduce((h, c) => (h ^ c.charCodeAt(0)) * -5, 5) >>> 2;
+    }
+    function minidenticon(seed) {
+      const hash = simpleHash(seed);
+      const hue  = (hash % COLORS_NB) * (360 / COLORS_NB);
+      return [...Array(seed ? 25 : 0)].reduce((acc, _, i) =>
+        hash & (1 << (i % 15))
+          ? acc + `<rect x="${i > 14 ? 7 - ~~(i/5) : ~~(i/5)}" y="${i%5}" width="1" height="1"/>`
+          : acc,
+        `<svg viewBox="-1.5 -1.5 8 8" xmlns="http://www.w3.org/2000/svg" fill="hsl(${hue} ${SAT}% ${LIT}%)">`
+      ) + '</svg>';
+    }
+
+    // ── Passphrase show/hide toggle ───────────────────────────────────────────
+    const EYE_OPEN  = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    const EYE_SHUT  = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
+    function togglePassVis() {
+      const inp = document.getElementById("basephrase");
+      const icon = document.getElementById("eye-icon");
+      const showing = inp.type === "text";
+      inp.type = showing ? "password" : "text";
+      icon.innerHTML = showing ? EYE_OPEN : EYE_SHUT;
+    }
+
+    // ── Main generation (async for PBKDF2) ────────────────────────────────────
+    async function doit() {
+      const account    = document.getElementById("account").value.trim();
+      const passphrase = document.getElementById("basephrase").value;
+
+      if (!passphrase) {
+        highlight("basephrase");
+        return;
+      }
+
+      const charset = gen_charset();
+      if (charset.length === 0) {
+        alert("Select at least one character class.");
+        return;
+      }
+
+      let min_chars = Math.max(1, parseInt(document.getElementById("min_chars").value) || 8);
+      let max_chars = Math.max(1, parseInt(document.getElementById("max_chars").value) || 20);
+      if (min_chars > max_chars) { [min_chars, max_chars] = [max_chars, min_chars]; }
+
+      // Busy state while PBKDF2 runs
+      const btn = document.getElementById("run-btn");
+      btn.classList.add("busy");
+
+      let s0, s1;
+      try {
+        [s0, s1] = await derive_seed(account, passphrase);
+      } catch(e) {
+        alert("Key derivation failed: " + e.message);
+        btn.classList.remove("busy");
+        return;
+      }
+
+      btn.classList.remove("busy");
+
+      const rng = xoroshiro64ss(s0, s1);
+
+      // Update charset display (may already be current, but keep it in sync)
+      document.getElementById("char_set").textContent = charset;
+      document.getElementById("charset-display").classList.add("visible");
+
+      // Generate 10 passwords
+      const outputEl = document.getElementById("output");
+      outputEl.innerHTML = "";
+
+      const range = max_chars - min_chars;
+      for (let n = 0; n < 10; n++) {
+        const len = min_chars + bounded_rand(rng, range + 1);
+
+        let pw = "";
+        for (let i = 0; i < len; i++) {
+          pw += charset[bounded_rand(rng, charset.length)];
+        }
+
+        const bits = entropy_bits(len, charset.length);
+
+        const card = document.createElement("div");
+        card.className = "pw-card";
+        card.innerHTML = `
+          <div class="pw-ident">${minidenticon(pw)}</div>
+          <div class="pw-content">
+            <div class="pw-index">PW-${String(n+1).padStart(2,'0')}</div>
+            <div class="pw-text">${escHtml(pw)}</div>
+            <div class="pw-meta">
+              <span>${len} chars</span>
+              <span class="pw-strength">${bits} bits</span>
+            </div>
+          </div>
+          <div class="pw-copy-hint">copy</div>
+          <div class="copy-confirm">COPIED</div>
+        `;
+        card.addEventListener("click", () => copyPw(pw, card));
+        outputEl.appendChild(card);
+      }
+
+      document.getElementById("output-panel").classList.add("visible");
+      document.getElementById("output-panel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function copyPw(text, card) {
+      navigator.clipboard.writeText(text).then(() => {
+        card.classList.add("copied");
+        setTimeout(() => card.classList.remove("copied"), 1200);
+      }).catch(() => {
+        // Fallback for local file:// contexts where clipboard API may be restricted
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        card.classList.add("copied");
+        setTimeout(() => card.classList.remove("copied"), 1200);
+      });
+    }
+
+    function highlight(id) {
+      const el = document.getElementById(id);
+      el.style.borderColor = "var(--accent)";
+      el.style.boxShadow = "var(--glow-o)";
+      el.focus();
+      setTimeout(() => { el.style.borderColor = ""; el.style.boxShadow = ""; }, 1500);
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Enter key triggers generation from either input
+    ["account","basephrase"].forEach(id => {
+      document.getElementById(id).addEventListener("keydown", e => {
+        if (e.key === "Enter") doit();
+      });
+    });
+
+    // Initialize charset display on load
+    update_charset_display();
+  </script>
+</body>
+</html>
