@@ -19,6 +19,8 @@
 
 #vis#
 
+#ident#
+
 #main#
 
 // Maybe calculate this later?
@@ -26,7 +28,7 @@
 
     </script>
   </head>
-  <body onload="draw('flippity flopity floo! 12345');" class="w3-theme-d5">
+  <body onload="draw('flippity flopity floo! 12345', 'tutorial');" class="w3-theme-d5">
     <h1>Leeloo Dallas Multipass!</h1>
 
     <canvas id="tutorial" width="32" height="32">(no HTML canvas support)</canvas>
@@ -38,9 +40,20 @@
     <img class="w3-round" src="data:image/jpeg;base64, #leeloo#"/><br>
 
     <div class="w3-container w3-theme-l3">
-      <label for="basephrase">Base Input:</label>
-        <input id="basephrase" class="w3-input w3-border" type="text"><br>
 
+      <div class="w3-half">
+        <label for="account">Account:</label>
+          <div class="w3-margin">
+            <input id="account" class="w3-input w3-border" type="text">
+          </div>
+      </div>
+      <div class="w3-half">
+      <label for="basephrase">Base Input:</label>
+        <div class="w3-margin">
+          <input id="basephrase" class="w3-input w3-border" type="text">
+        </div>
+      </div>
+      
       <input id="low_alpha" type="checkbox" class="w3-input" checked="true">
         <label for="low_alpha">Lowercase Alphabet</label> <br>
 

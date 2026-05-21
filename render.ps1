@@ -7,6 +7,7 @@ $token_list = @{
   theme = Get-Content -Path css\theme.css -RAW
   hash  = Get-Content -Path js\hash.js -RAW
   rng   = Get-Content -Path js\rng.js -RAW
+  ident = Get-Content -Path js\minidenticons.js -RAW
   main  = Get-Content -Path js\main.js -RAW
   vis   = Get-Content -Path js\vis.js -RAW
 

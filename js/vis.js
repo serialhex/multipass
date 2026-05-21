@@ -43,8 +43,12 @@ function make_rgba(r, g, b, min, max) {
   return "rgba(" + m(r) + ", " + m(g) + ", " + m(b) + ", 1.0)";
 }
 
-function draw(str) {
-  const canvas = document.getElementById("tutorial");
+function odd_p(num) {
+  return 1 == (num % 2);
+}
+
+function draw(str, id) {
+  const canvas = document.getElementById(id);
 
   if (canvas.getContext) {
     const ctx = canvas.getContext("2d");
@@ -53,20 +57,30 @@ function draw(str) {
     let arr = str_int_arr(str)
     let max = max_val(arr);
     let min = min_val(arr);
-    console.log(min);
-    console.log(max);
+    let hash = cyrb_dual32(str);
+    console.log(`${str} min char: ${min} max: ${max}`);
 
-    for (var y = 0; y < canvas.height; y += 2) {
-      for (var x = 0; x < canvas.width; x += 2) {
+    // Make it white half the time
+    ctx.fillStyle = odd_p(min) ? "rgba(255,255,255,1.0)" : "rgba(0,0,0,1.0)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // let color = make_rgba();
+
+    let pix_size = 8
+    for (var y = 0; y < canvas.height; y += pix_size) {
+      for (var x = 0; x < canvas.width; x += pix_size) {
         var i = x+y;
-        ctx.fillStyle = make_rgba(arr[i % len], arr[(i+1)%len], arr[(i+2)%len], min, max);
-        console.log(arr[i % len]);
-        ctx.fillRect(x, y, 2, 2);
+        if (odd_p(arr[i % len])) {
+          ctx.fillStyle = make_rgba(arr[i % len], arr[(i+1)%len], arr[(i+2)%len], min, max);
+          ctx.fillRect(x, y, pix_size, pix_size);
+        } else {
+          // do nothing
+        }
       }
     }
 
   } else {
     // canvas-unsupported code here
+    alert("Canvas called, but somehow not supported.");
   }
 }
 

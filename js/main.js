@@ -50,9 +50,6 @@ function doit() {
 
   let min_chars = Math.round(document.getElementById("min_chars").value);
   let max_chars = Math.round(document.getElementById("max_chars").value);
-  console.log(min_chars);
-  console.log(max_chars);
-
 
   // Probably the only error thingy in the whole thing...
   if (min_chars > max_chars) {
@@ -61,22 +58,30 @@ function doit() {
   }
 
   // generate passwords!
-  let pass = "";
-
+  let pass_id = new Array;
+  document.getElementById("output").innerHTML = "";
   for (let n = 0; n < 10; n++) {
     let n_chars = rand_in_range(rng(), min_chars, max_chars);
 
-    pass += "<div class=\"grid-item\">"
+    // generate the string
+    let rng_str = "";
     for (let i = 0; i < n_chars; i++) {
       const r = rng();
-      pass += charset[reduce(r, charset.length)];
+      rng_str += charset[reduce(r, charset.length)];
     }
+    
+    let pass = "<div class=\"grid-item\">";
+    //let id = "pass_" + n;
+    pass += minidenticon(rng_str)// "<canvas id=\"" + id + "\" width=\"64\" height=\"64\">(no HTML canvas support)</canvas>"
+    pass += "<br>";
+    
+    pass += rng_str;
     pass += "</div>"
+    pass_id.push([rng_str, id]);
+    document.getElementById("output").innerHTML += pass;
   }
 
+  pass_id.forEach(function (val) { draw(val[0], val[1]); });
   // pass += "</ol>";
-
-
-  document.getElementById("output").innerHTML = pass;
 }
 
